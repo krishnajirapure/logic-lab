@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CodeArena – Arena</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="arena">
+
+<h1 id="langTitle">Arena</h1>
+<p class="arena-sub">Daily Challenge</p>
+
+<div class="challenge-card">
+
+<h2 id="qTitle">Reverse a String</h2>
+<p id="qDesc">Write a function that reverses a string.</p>
+
+<textarea id="codeArea" placeholder="Write your solution here..."></textarea>
+
+
+<div id="lintBox" style="color:#facc15;margin-top:10px;"></div>
+
+<div class="arena-controls">
+<button onclick="startTimer()">Start</button>
+<button onclick="pauseTimer()">Pause</button>
+<button onclick="resetTimer()">Reset</button>
+<button onclick="submitCode()">Submit</button>
+<button onclick="showSolution()">Solution</button>
+</div>
+
+<div class="arena-info">
+⏳ <span id="timer">60</span>s  
+⭐ XP: <span id="xp">0</span>  
+🔥 Streak: <span id="streak">0</span>
+</div>
+
+</div>
+
+<div class="explain-box" id="explainBox"></div>
+
+<script src="arena.js"></script>
+</body>
+</html>
