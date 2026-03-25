@@ -1,50 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>CodeArena Dashboard</title>
-<link rel="stylesheet" href="style.css">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <title>CodeArena – Live Challenge</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<div class="dashboard">
+<div class="arena-container">
+    <div class="sidebar">
+        <button onclick="window.location.href='dashboard.html'" class="back-btn">← Dashboard</button>
+        <h2 id="langTitle">JavaScript Arena</h2>
+        <div class="arena-info">
+            <div class="stat-card">⏳ <span id="timer">60</span>s</div>
+            <div class="stat-card">⭐ XP: <span id="xp">0</span></div>
+            <div class="stat-card">🔥 Streak: <span id="streak">0</span></div>
+        </div>
+        <div class="tips-box">
+            <h4>Pro Tip:</h4>
+            <p id="challengeHint">Use .split() to start!</p>
+        </div>
+    </div>
 
-<h1 class="dash-title">Choose Your Coding Arena</h1>
-<p class="dash-sub">Select a language and start today's challenge</p>
+    <div class="main-editor">
+        <div class="challenge-header">
+            <h2 id="qTitle">Reverse a String</h2>
+            <p id="qDesc">Write a function that reverses the input string.</p>
+        </div>
 
-<div class="lang-grid">
+        <div class="editor-wrapper">
+            <textarea id="codeArea" spellcheck="false" placeholder="// Write your code here..."></textarea>
+            <div id="lintBox"></div>
+        </div>
 
-<div class="lang-card">
-<img src="https://cdn-icons-png.flaticon.com/512/732/732212.png">
-<h3>HTML</h3>
-<p>Structure the web</p>
-<button onclick="window.location.href='arena.html'">Enter Arena</button>
+        <div class="arena-controls">
+            <button class="btn-secondary" onclick="resetTimer()">Reset</button>
+            <button class="btn-primary" id="startBtn" onclick="startTimer()">Start Session</button>
+            <button class="btn-success" onclick="submitCode()">Submit Solution</button>
+            <button class="btn-ghost" onclick="showSolution()">View Solution</button>
+        </div>
+        
+        <div id="explainBox" class="hidden"></div>
+    </div>
 </div>
 
-<div class="lang-card">
-<img src="https://cdn-icons-png.flaticon.com/512/732/732190.png">
-<h3>CSS</h3>
-<p>Style the web</p>
-<button onclick="window.location.href='arena.html'">Enter Arena</button>
-</div>
+<script>
+// --- Challenge Database ---
+const challenges = {
+    javascript: {
+        title: "Reverse a String",
+        desc: "Create a function `reverse(str)` that returns the string backwards.",
+        hint: "Convert to array, reverse, then join back.",
+        solution: "function reverse(str) {\n  return str.split('').reverse().join('');\n}",
+        test: (code) => code.includes("split") && code.includes("reverse") && code.includes("join")
+    },
+    html: {
+        title: "Create a Link",
+        desc: "Create an anchor tag that points to 'google.com'.",
+        hint: "Use the <a> tag with an href attribute.",
+        solution: '<a href="https://google.com">Google</a>',
+        test: (code) => code.includes("href") && code.includes("<a")
+    },
+    css: {
+        title: "Center a Div",
+        desc: "Use Flexbox to center a div inside a container.",
+        hint: "justify-content and align-items are your friends.",
+        solution: "display: flex;\njustify-content: center;\nalign-items: center;",
+        test: (code) => code.includes("flex") && code.includes("center")
+    }
+};
 
-<div class="lang-card">
-<img src="https://cdn-icons-png.flaticon.com/512/5968/5968292.png">
-<h3>JavaScript</h3>
-<p>Make it alive</p>
-<button onclick="window.location.href='arena.html'">Enter Arena</button>
-</div>
+// --- State Management ---
+let urlParams = new URLSearchParams(window.location.search);
+let currentLang = urlParams.get('lang') || 'javascript';
+let challenge = challenges[currentLang] || challenges.javascript;
 
-<div class="lang-card">
-<img src="https://cdn-icons-png.flaticon.com/512/226/226777.png">
-<h3>Java</h3>
-<p>Backend power</p>
-<button onclick="window.location.href='arena.html'">Enter Arena</button>
-</div>
+let remainingTime = 60;
+let timer = null;
+let xp = parseInt(localStorage.getItem("xp")) || 0;
+let streak = parseInt(localStorage.getItem("streak")) || 0;
 
-</div>
+// --- Initialization ---
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById("langTitle").innerText = currentLang.toUpperCase() + " Arena";
+    document.getElementById("qTitle").innerText = challenge.title;
+    document.getElementById("qDesc").innerText = challenge.desc;
+    document.getElementById("challengeHint").innerText = challenge.hint;
+    updateStats();
+});
 
-</div>
+function updateStats() {
+    document.getElementById("xp").innerText = xp;
+    document.getElementById("streak").innerText = streak;
+    document.getElementById("timer").innerText = remainingTime;
+}
+
+// --- Timer Logic ---
+function startTimer() {
+    if (timer) return;
+    document.getElementById("startBtn").disabled = true;
+    timer = setInterval(() => {
+        if (remainingTime > 0) {
+            remainingTime--;
+            updateStats();
+        } else {
+            clearInterval(timer);
+            alert("Time's up! Try again.");
+            resetTimer();
+        }
+    }, 1000);
+}
+
+function resetTimer() {
+    clearInterval(timer);
+    timer = null;
+    remainingTime = 60;
+    document.getElementById("startBtn").disabled = false;
+    updateStats();
+}
+
+// --- Submission Logic ---
+function submitCode() {
+    let code = document.getElementById("codeArea").value;
+    const box = document.getElementById("explainBox");
+    box.classList.remove("hidden");
+
+    if (challenge.test(code)) {
+        xp += 20;
+        streak++;
+        box.innerHTML = `<div class="success-msg">🎉 Correct! +20 XP earned.</div>`;
+        clearInterval(timer);
+    } else {
+        streak = 0;
+        box.innerHTML = `<div class="error-msg">❌ Not quite. Check the hint and try again!</div>`;
+    }
+
+    localStorage.setItem("xp", xp);
+    localStorage.setItem("streak", streak);
+    updateStats();
+}
+
+function showSolution() {
+    document.getElementById("codeArea").value = challenge.solution;
+}
+</script>
 </body>
 </html>
